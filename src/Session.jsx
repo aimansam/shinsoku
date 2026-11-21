@@ -508,7 +508,7 @@ export default function Session({ run, settings: cfg, xp, music, vis, onFinish }
         <div className="gauge">
           {DEPTHS.map((_, i) => <div key={i} className="seg"><i style={{ '--w': `${segment(i)}%` }} /></div>)}
         </div>
-        <div className="gauge-meta"><span>FLOW {fmtTime(ui.flow)}</span><span>FORM {ui.depth}/4</span></div>
+        <div className="gauge-meta"><span>FLOW {fmtTime(ui.flow)}</span><span>FORM {ui.depth + 1}/{DEPTHS.length}</span></div>
 
         <div className="panel quest" style={{ width: '100%', boxSizing: 'border-box' }}>
           <h4>QUEST: {run.mission}</h4>
