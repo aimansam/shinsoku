@@ -26,7 +26,7 @@ visuals and a cheeky mascot (Soku-chan) get louder, faster and more chaotic with
 - **Audio-reactive WebGL background:** tunnel, kaleidoscope, speed lines, glitch rows, screen shake. 2D canvas fallback.
 - **Soku-chan**, an original anime-style SVG mascot (long wavy hair, flower hairpin, school blazer) with a dozen moods who dances to the beat, trolls you, and flies in for cut-ins.
 - **Popups, a lot of them:** floating numbers, stickers, achievements, fake error windows, fake live chat, emoji rain, warning tape.
-- **Fake notification spam that scales with your form:** one every ~20 s at BASE, a 5-notification wave every ~2.5 s at LIMIT BREAK (Chill intensity keeps it light).
+- **Fake notification spam that scales with your form:** 2 per wave every ~10 s at BASE, up to 10 per wave every ~1 s at LIMIT BREAK (Chill intensity keeps it light).
 - **Modes:** Study, Deep Work, Gaming, Creative, Reading, Custom (they only set defaults, none changes how the app behaves).
 - **Score, XP and levels**, daily streak, parking-lot for distracting thoughts, objectives checklist.
 - **Leaving the tab does nothing.** There is no tab-leave detection or penalty, by design.
