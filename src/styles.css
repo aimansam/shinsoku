@@ -204,7 +204,7 @@ html, body { margin: 0; background: #05060a; color: #fff; font-family: 'Segoe UI
 @keyframes bob2 { 50% { transform: translateY(-5px); } }
 .mascot-svg .tail-l { transform-origin: 52px 80px; animation: sway 2.6s ease-in-out infinite; }
 .mascot-svg .tail-r { transform-origin: 148px 80px; animation: sway 2.6s ease-in-out infinite reverse; }
-.mascot-svg .ahoge { transform-origin: 100px 50px; animation: sway 1.3s ease-in-out infinite; }
+.mascot-svg .ahoge { transform-origin: 96px 38px; animation: sway 1.3s ease-in-out infinite; }
 @keyframes sway { 50% { transform: rotate(5deg); } }
 .mascot-svg .blink { animation: blink 4.5s infinite; }
 @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
@@ -327,14 +327,14 @@ html, body { margin: 0; background: #05060a; color: #fff; font-family: 'Segoe UI
 .kanji-sub { font-family: var(--display); font-style: italic; letter-spacing: 0.45em; color: var(--c); margin-top: 10px; text-shadow: 0 2px 8px #000; font-size: 18px; }
 
 /* ---------- cuter Soku-chan ---------- */
-.mascot-svg .ear-l { transform-origin: 62px 70px; animation: earL 3s ease-in-out infinite; }
-.mascot-svg .ear-r { transform-origin: 138px 70px; animation: earR 3s ease-in-out infinite 0.4s; }
+.mascot-svg .ear-l { transform-origin: 40px 50px; animation: earL 3s ease-in-out infinite; }
+.mascot-svg .ear-r { transform-origin: 160px 50px; animation: earR 3s ease-in-out infinite 0.4s; }
 @keyframes earL { 0%, 88%, 100% { transform: rotate(0); } 92% { transform: rotate(-14deg); } 96% { transform: rotate(4deg); } }
 @keyframes earR { 0%, 88%, 100% { transform: rotate(0); } 92% { transform: rotate(14deg); } 96% { transform: rotate(-4deg); } }
 .mood-hype .ear-l, .mood-ultra .ear-l, .mood-hype .ear-r, .mood-ultra .ear-r { animation-duration: 0.5s; }
-.mood-cry .ear-l { animation: none; transform: rotate(-30deg); }
-.mood-cry .ear-r { animation: none; transform: rotate(30deg); }
-.mascot-svg .bow { transform-origin: 146px 62px; animation: bowWig 2.4s ease-in-out infinite; }
+.mood-cry .ear-l { animation: none; transform: rotate(-7deg); }
+.mood-cry .ear-r { animation: none; transform: rotate(7deg); }
+.mascot-svg .bow { transform-origin: 142px 62px; animation: bowWig 2.4s ease-in-out infinite; }
 @keyframes bowWig { 50% { transform: rotate(7deg); } }
 .mascot-svg .paw-l { animation: pawL 0.3s ease-in-out infinite alternate; }
 .mascot-svg .paw-r { animation: pawR 0.3s ease-in-out infinite alternate; }

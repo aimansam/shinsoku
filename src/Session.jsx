@@ -9,6 +9,9 @@ const COUNTDOWN = 3;
 const rnd = (a, b) => a + Math.random() * (b - a);
 const HYPE = [['KEEP GOING!', '続けろ'], ['UNSTOPPABLE', '無敵'], ['NO MERCY', '容赦なし'], ['FLOW STATE', '没入'], ['CRUSH IT', '粉砕'],
   ['LOCKED IN', '集中'], ['INSANE!', '狂気'], ['ON FIRE', '炎上'], ['GOD MODE', '神モード'], ["DON'T STOP", '止まるな'], ['PURE FOCUS', '無心'], ['SO CLEAN', '完璧']];
+// Fake-notification spam per power form (BASE, AWAKENED, SUPER, ULTRA, LIMIT BREAK): seconds between waves, and how many pop per wave.
+const NOTIF_EVERY = [[14, 26], [8, 15], [5, 9], [3, 6], [1.5, 3.5]];
+const NOTIF_BURST = [1, 2, 3, 4, 5];
 const FORM_ACH = [null, ['FIRST BLOOD', 'Reached AWAKENED'], ['POWER UP', 'Reached SUPER'], ['OVERDRIVE', 'Reached ULTRA'], ['LEGEND', 'Reached LIMIT BREAK']];
 
 // Everything that changes while the timer runs lives in one mutable object (R).
@@ -26,7 +29,7 @@ export default function Session({ run, settings: cfg, xp, music, vis, onFinish }
       phase: 'countdown', round: 1, total: COUNTDOWN, end: now() + COUNTDOWN * 1000, last: now(),
       flow: 0, focusSec: 0, depth: 0, max: 0, breaks: 0, paused: false, pausedRem: 0,
       tasks: run.tasks.map((t) => ({ t, done: false })), parked: [],
-      popId: 0, nextFloat: 3, nextHype: 5, nextChat: 9, nextNotif: 25, nextViewer: 2, nextImpact: 7, nextWin: 40, nextRain: 25, nextDvd: 60, nextHaz: 45, nextStunt: 15, lastMin: 0, ach: {}, half: false, sprint: false, lastSec: 99,
+      popId: 0, nextFloat: 3, nextHype: 5, nextChat: 9, nextNotif: 12, nextViewer: 2, nextImpact: 7, nextWin: 40, nextRain: 25, nextDvd: 60, nextHaz: 45, nextStunt: 15, lastMin: 0, ach: {}, half: false, sprint: false, lastSec: 99,
     };
   }
   const [ui, setUi] = useState(() => snapshot(R.current));
@@ -96,6 +99,15 @@ export default function Session({ run, settings: cfg, xp, music, vis, onFinish }
     music.siren();
   };
   const rain = () => pop('rain', '', { ms: 3400 });
+  const notifSpam = (count) => {
+    for (let k = 0; k < count; k++)
+      setTimeout(() => {
+        const [app, sub, color] = pick(NOTIFS);
+        pop('notif', app, { sub, color, ms: 3600 });
+        music.blip(92 + Math.floor(rnd(0, 8)));
+      }, k * 240);
+    if (Math.random() < 0.6) setTimeout(() => say(pick(LINES.notif), 'smug'), 900);
+  };
   const winStorm = () => {
     for (let k = 0; k < 5; k++)
       setTimeout(() => {
@@ -236,11 +248,11 @@ export default function Session({ run, settings: cfg, xp, music, vis, onFinish }
             say(pick(LINES.chat), pick(['wink', 'smug', null, null]));
           }
           if (r.focusSec >= r.nextNotif) {
-            r.nextNotif += rnd(40, 80);
-            const [app, sub, color] = pick(NOTIFS);
-            pop('notif', app, { sub, color, ms: 3600 });
-            music.blip(96);
-            setTimeout(() => say(pick(LINES.notif), 'smug'), 900);
+            // the higher the form, the faster and bigger the notification spam (Chill intensity keeps it light)
+            const chill = cfg.intensity === 'chill';
+            const [lo, hi] = NOTIF_EVERY[r.depth];
+            r.nextNotif += rnd(lo, hi) * (chill ? 2.5 : 1);
+            notifSpam(chill ? 1 : NOTIF_BURST[r.depth]);
           }
           if (r.focusSec >= r.nextViewer) {
             r.nextViewer += rnd(1.0, 2.4) / (1 + r.depth * 0.5);
@@ -555,7 +567,7 @@ export default function Session({ run, settings: cfg, xp, music, vis, onFinish }
         </div>
       )}
       <div className="notif-stack">
-        {pops.filter((p) => p.kind === 'notif').map((p) => (
+        {pops.filter((p) => p.kind === 'notif').slice(-7).map((p) => (
           <div key={p.id} className="pop-notif">
             <i style={{ background: p.color }}>{p.text[0]}</i>
             <div><b>{p.text}</b><span>{p.sub}</span></div>

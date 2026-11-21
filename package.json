@@ -2,7 +2,23 @@
   "name": "shinsoku",
   "private": true,
   "version": "1.0.0",
+  "description": "Shinsoku (神速): an intense, anime-flavoured focus app with procedural beat music, WebGL visuals and a cheeky mascot.",
+  "keywords": [
+    "focus",
+    "productivity",
+    "webaudio",
+    "webgl",
+    "react",
+    "vite"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aimansam/shinsoku.git"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

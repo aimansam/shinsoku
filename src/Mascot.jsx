@@ -1,9 +1,11 @@
-// SOKU-CHAN: an original chibi anime mascot drawn as inline SVG (no image files).
+// SOKU-CHAN: an original anime-style mascot (soft, gentle, long wavy hair) drawn as inline SVG (no image files).
 // Her expression ("mood") and her speech bubble are driven by the parent.
 
 const SKIN = '#ffe9dc';
-const HAIR = '#7a5cff';
-const HAIR2 = '#b3a3ff';
+const HAIR = '#f6e6cf'; // soft champagne blonde
+const HAIR2 = '#fffaf0';
+const HAIR3 = '#dcbd98'; // shading
+const HLINE = '#6b4d3a'; // soft brown line art for hair
 const PINK = '#ff9ec4';
 const INK = '#1a1030';
 const EYE_Y = 116;
@@ -17,18 +19,12 @@ const BROWS = {
 };
 
 const MOUTHS = {
-  // cat "w" mouth with one tiny fang
-  smile: (
-    <>
-      <path d="M86 137 Q93 146 100 137 Q107 146 114 137" stroke={INK} strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M90 142 L93 149 L96 143 Z" fill="#fff" stroke={INK} strokeWidth="1.3" strokeLinejoin="round" />
-    </>
-  ),
+  // soft little smile
+  smile: <path d="M88 141 Q100 152 112 141" stroke={INK} strokeWidth="3" fill="none" strokeLinecap="round" />,
   open: (
     <>
-      <path d="M86 134 Q100 164 114 134 Z" fill="#8a1d44" stroke={INK} strokeWidth="2.5" strokeLinejoin="round" />
-      <path d="M93 150 Q100 143 107 150 Q100 158 93 150 Z" fill="#ff7a96" />
-      <path d="M88 135 L91 142 L94 136 Z" fill="#fff" />
+      <path d="M87 137 Q100 162 113 137 Z" fill="#8a1d44" stroke={INK} strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M93 150 Q100 143 107 150 Q100 157 93 150 Z" fill="#ff7a96" />
     </>
   ),
   smirk: (
@@ -103,16 +99,27 @@ const Heart = ({ x, y, s = 1, d = 0 }) => (
     d="M0 7 C-14 -3 -8 -14 0 -6 C8 -14 14 -3 0 7Z" />
 );
 
+// little hand that waves when she is hyped
 const Paw = ({ x, cls }) => (
   <g className={`paw ${cls}`} style={{ transformOrigin: `${x}px 150px` }}>
-    <circle cx={x} cy="138" r="14" fill={SKIN} stroke={INK} strokeWidth="2" />
-    <ellipse cx={x} cy="142" rx="6" ry="5" fill={PINK} />
-    <circle cx={x - 7} cy="133" r="2.6" fill={PINK} />
-    <circle cx={x} cy="130" r="2.6" fill={PINK} />
-    <circle cx={x + 7} cy="133" r="2.6" fill={PINK} />
+    <rect x={x - 11} y="146" width="22" height="12" rx="4" fill="#27325e" stroke={INK} strokeWidth="2" />
+    <circle cx={x} cy="136" r="13" fill={SKIN} stroke={INK} strokeWidth="2" />
+    <path d={`M${x - 5} 128 V136 M${x} 126 V136 M${x + 5} 128 V136`} stroke="#e0a08b" strokeWidth="1.6" strokeLinecap="round" />
   </g>
 );
 
+const Flower = ({ x, y, s = 1, d = 0 }) => (
+  <g transform={`translate(${x} ${y}) scale(${s})`}>
+    <g className="clip" style={{ animationDelay: `${d}s` }}>
+      {[0, 72, 144, 216, 288].map((a) => (
+        <ellipse key={a} cx="0" cy="-7" rx="4.6" ry="6.4" transform={`rotate(${a})`} fill="#fff" stroke="#e58aa8" strokeWidth="1.4" />
+      ))}
+      <circle r="3.6" fill="#ffd36b" stroke="#c98a1a" strokeWidth="1.2" />
+    </g>
+  </g>
+);
+
+// Soku-chan: a gentle, long-haired anime girl in a school blazer, with a flower hairpin and a ribbon.
 export function Soku({ mood = 'focus', size = 190 }) {
   const m = MOODS[mood] || MOODS.focus;
   const eyes = m.eyes;
@@ -126,33 +133,32 @@ export function Soku({ mood = 'focus', size = 190 }) {
       </defs>
       {m.aura && <circle className="aura" cx="100" cy="115" r="105" fill="url(#aura)" />}
       <g className="bob">
-        {/* curly twin tails + back hair */}
-        <g className="tail-l"><path d="M48 88 Q8 96 12 146 Q14 176 40 188 Q22 150 54 124 Z" className="hair" fill={HAIR} /></g>
-        <g className="tail-r"><path d="M152 88 Q192 96 188 146 Q186 176 160 188 Q178 150 146 124 Z" className="hair" fill={HAIR} /></g>
-        <path d="M42 100 Q36 40 100 34 Q164 40 158 100 L166 170 Q132 156 100 158 Q68 156 34 170 Z" className="hair" fill={HAIR} />
-        {/* neko ears */}
-        <g className="ear-l"><path d="M46 78 L36 20 L90 50 Z" className="hair" fill={HAIR} /><path d="M52 68 L47 36 L78 52 Z" fill={PINK} /></g>
-        <g className="ear-r"><path d="M154 78 L164 20 L110 50 Z" className="hair" fill={HAIR} /><path d="M148 68 L153 36 L122 52 Z" fill={PINK} /></g>
-        {/* little uniform */}
-        <path d="M54 244 Q58 188 100 178 Q142 188 146 244 Z" fill="#23264d" />
-        <path d="M82 180 L100 200 L118 180 L110 176 L100 186 L90 176 Z" fill="#fff" />
-        <path d="M100 194 L86 186 L86 202 Z M100 194 L114 186 L114 202 Z" fill="var(--c)" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
-        <circle cx="100" cy="194" r="4" fill="var(--c)" stroke={INK} strokeWidth="2" />
-        {/* neck + big round face */}
-        <rect x="91" y="152" width="18" height="28" fill="#f3cdb8" />
-        <ellipse cx="100" cy="106" rx="58" ry="54" fill={SKIN} />
-        {/* blush with hatch lines, tiny nose */}
-        <ellipse className="blush" cx="62" cy="136" rx="11" ry="6.5" fill="#ff8fa3" opacity="0.6" />
-        <ellipse className="blush" cx="138" cy="136" rx="11" ry="6.5" fill="#ff8fa3" opacity="0.6" />
-        <path d="M55 134 l4 -6 M61 135 l4 -6 M67 134 l4 -6 M129 134 l4 -6 M135 135 l4 -6 M141 134 l4 -6" stroke="#ff6f91" strokeWidth="1.8" strokeLinecap="round" />
-        <circle cx="100" cy="128" r="1.5" fill="#e0a08b" />
+        {/* long back hair */}
+        <path d="M40 100 Q34 30 100 26 Q166 30 160 100 L168 168 Q176 206 158 238 L42 238 Q24 206 32 168 Z" className="hair" fill={HAIR} stroke={HLINE} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M36 170 Q30 206 44 236 M164 170 Q170 206 156 236" stroke={HAIR3} strokeWidth="6" fill="none" strokeLinecap="round" opacity="0.8" />
+        {/* school blazer, white blouse, ribbon */}
+        <path d="M44 244 Q48 192 100 182 Q152 192 156 244 Z" fill="#27325e" stroke={INK} strokeWidth="2" />
+        <path d="M82 184 L100 222 L118 184 Z" fill="#fff" stroke={INK} strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M82 184 L72 204 L94 214 Z M118 184 L128 204 L106 214 Z" fill="#33407a" stroke={INK} strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M100 206 L80 196 Q76 208 82 220 Z M100 206 L120 196 Q124 208 118 220 Z" fill="var(--c)" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M96 210 L90 232 L100 226 L110 232 L104 210 Z" fill="var(--c)" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+        <circle cx="100" cy="206" r="6" fill="var(--c)" stroke={INK} strokeWidth="2" />
+        <path d="M96 200 Q100 197 104 200" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.7" />
+        {/* neck + face */}
+        <path d="M90 150 H110 V186 Q100 192 90 186 Z" fill="#f3cdb8" />
+        <path d="M44 104 Q44 54 100 52 Q156 54 156 104 Q156 142 130 158 Q100 172 70 158 Q44 142 44 104 Z" fill={SKIN} />
+        {/* blush, tiny nose */}
+        <ellipse className="blush" cx="64" cy="137" rx="12" ry="6.5" fill="#ff8fa3" opacity="0.55" />
+        <ellipse className="blush" cx="136" cy="137" rx="12" ry="6.5" fill="#ff8fa3" opacity="0.55" />
+        <path d="M57 135 l4 -6 M63 136 l4 -6 M69 135 l4 -6 M131 135 l4 -6 M137 136 l4 -6 M143 135 l4 -6" stroke="#ff6f91" strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="100" cy="130" r="1.4" fill="#e0a08b" />
         {/* eyes, mouth, tears */}
         {eyes === 'shades' ? (
           <Shades />
         ) : (
           <>
-            <Eye cx={74} mode={eyes} iris={m.iris} />
-            <Eye cx={126} mode={eyes} iris={m.iris} />
+            <Eye cx={76} mode={eyes} iris={m.iris} />
+            <Eye cx={124} mode={eyes} iris={m.iris} />
           </>
         )}
         {m.sweat && <path className="tear" d="M150 90 Q143 106 150 116 Q158 106 150 90 Z" fill="#7fd4ff" stroke="#2a8ccf" strokeWidth="1.5" />}
@@ -163,21 +169,30 @@ export function Soku({ mood = 'focus', size = 190 }) {
           </>
         )}
         {MOUTHS[m.mouth]}
-        {/* hair front: bangs, side locks */}
-        <path d="M44 100 Q42 46 100 40 Q158 46 156 100 Q148 76 136 70 L128 92 L114 64 L100 94 L86 64 L72 92 L64 70 Q52 76 44 100 Z" className="hair" fill={HAIR} />
-        <path d="M46 100 Q38 130 46 162 Q54 130 60 104 Z M154 100 Q162 130 154 162 Q146 130 140 104 Z" className="hair" fill={HAIR} />
-        <path d="M70 58 Q82 48 98 48" stroke={HAIR2} strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.85" />
-        {BROWS[m.brow] && BROWS[m.brow].map((d) => <path key={d} d={d} stroke={INK} strokeWidth="3" fill="none" strokeLinecap="round" />)}
-        {/* hair clips (left) and a bow (right) */}
-        <path className="clip" transform="translate(58 72)" d="M0 -9 L2.6 -2.6 L9 0 L2.6 2.6 L0 9 L-2.6 2.6 L-9 0 L-2.6 -2.6Z" fill="var(--c)" stroke={INK} strokeWidth="1.8" />
-        <path className="clip" style={{ animationDelay: '0.3s' }} transform="translate(74 60) scale(0.7)" d="M0 -9 L2.6 -2.6 L9 0 L2.6 2.6 L0 9 L-2.6 2.6 L-9 0 L-2.6 -2.6Z" fill="var(--c)" stroke={INK} strokeWidth="1.8" />
-        <g className="bow">
-          <path d="M146 62 L126 50 L126 74 Z M146 62 L166 50 L166 74 Z" fill={PINK} stroke={INK} strokeWidth="2" strokeLinejoin="round" />
-          <circle cx="146" cy="62" r="5.5" fill="#ff5c93" stroke={INK} strokeWidth="2" />
+        {/* wavy side locks that sway */}
+        <g className="tail-l">
+          <path d="M46 100 Q26 140 38 178 Q28 206 44 234 Q66 210 54 182 Q64 148 54 106 Z" className="hair" fill={HAIR} stroke={HLINE} strokeWidth="2" strokeLinejoin="round" />
+          <path d="M44 132 Q36 162 44 188 M49 122 Q46 150 50 172" stroke={HAIR3} strokeWidth="2.4" fill="none" strokeLinecap="round" opacity="0.8" />
         </g>
-        {/* heart-tipped ahoge */}
-        <path className="ahoge" d="M100 42 Q95 24 108 14" stroke={HAIR} strokeWidth="5" fill="none" strokeLinecap="round" />
-        <path className="ahoge-heart" transform="translate(110 11) scale(1.3)" d="M0 5 C-9 -4 -5 -11 0 -5 C5 -11 9 -4 0 5Z" fill="#ff5c93" stroke={INK} strokeWidth="1.4" />
+        <g className="tail-r">
+          <path d="M154 100 Q174 140 162 178 Q172 206 156 234 Q134 210 146 182 Q136 148 146 106 Z" className="hair" fill={HAIR} stroke={HLINE} strokeWidth="2" strokeLinejoin="round" />
+          <path d="M156 132 Q164 162 156 188 M151 122 Q154 150 150 172" stroke={HAIR3} strokeWidth="2.4" fill="none" strokeLinecap="round" opacity="0.8" />
+        </g>
+        {/* soft curtain bangs with a gentle part */}
+        <path d="M43 108 Q36 40 100 32 Q164 40 157 108 Q152 92 142 84 Q128 80 112 60 Q106 82 84 90 Q64 94 52 106 Q47 108 43 108 Z" className="hair" fill={HAIR} stroke={HLINE} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M70 52 Q86 40 106 40 M126 46 Q142 54 146 70 M60 84 Q72 72 80 62 M100 60 Q94 76 84 82" stroke={HAIR2} strokeWidth="3.2" fill="none" strokeLinecap="round" opacity="0.9" />
+        {BROWS[m.brow] && BROWS[m.brow].map((d) => <path key={d} d={d} stroke="#6b4d3a" strokeWidth="2.8" fill="none" strokeLinecap="round" />)}
+        {/* single curly ahoge */}
+        <path className="ahoge" d="M96 38 Q90 16 108 12 Q118 18 108 27" stroke={HAIR} strokeWidth="4.6" fill="none" strokeLinecap="round" />
+        <path className="ahoge" d="M96 38 Q90 16 108 12 Q118 18 108 27" stroke={HLINE} strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.55" />
+        {/* ribbon on the right, flower hairpin on the left */}
+        <g className="bow">
+          <path d="M142 62 L120 48 Q114 62 120 76 Z M142 62 L164 48 Q170 62 164 76 Z" fill="var(--c)" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+          <circle cx="142" cy="62" r="5.5" fill="var(--c)" stroke={INK} strokeWidth="2" />
+          <path d="M126 58 Q132 62 128 70 M158 58 Q152 62 156 70" stroke="#fff" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.6" />
+        </g>
+        <Flower x={64} y={64} s={1.6} />
+        <Flower x={50} y={86} s={1} d={0.35} />
         {m.paws && (
           <>
             <Paw x={44} cls="paw-l" />
