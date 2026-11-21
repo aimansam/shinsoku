@@ -64,4 +64,4 @@ React 18, Vite, Mantine 7, WebGL, WebAudio. All progress is stored in your brows
 
 ## License
 
-No license yet.
+[MIT](LICENSE)

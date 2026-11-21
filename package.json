@@ -2,6 +2,7 @@
   "name": "shinsoku",
   "private": true,
   "version": "1.0.0",
+  "license": "MIT",
   "description": "Shinsoku (神速): an intense, anime-flavoured focus app with procedural beat music, WebGL visuals and a cheeky mascot.",
   "keywords": [
     "focus",
