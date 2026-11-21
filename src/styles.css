@@ -336,10 +336,6 @@ html, body { margin: 0; background: #05060a; color: #fff; font-family: 'Segoe UI
 .mood-cry .ear-r { animation: none; transform: rotate(7deg); }
 .mascot-svg .bow { transform-origin: 142px 62px; animation: bowWig 2.4s ease-in-out infinite; }
 @keyframes bowWig { 50% { transform: rotate(7deg); } }
-.mascot-svg .paw-l { animation: pawL 0.3s ease-in-out infinite alternate; }
-.mascot-svg .paw-r { animation: pawR 0.3s ease-in-out infinite alternate; }
-@keyframes pawL { from { transform: rotate(-12deg); } to { transform: rotate(8deg); } }
-@keyframes pawR { from { transform: rotate(12deg); } to { transform: rotate(-8deg); } }
 .mascot-svg .float-heart { animation: heartUp 1.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes heartUp { 0% { translate: 0 10px; opacity: 0; scale: 0.5; } 30% { opacity: 1; } 100% { translate: 0 -30px; opacity: 0; scale: 1.2; } }
 .mascot-svg .ahoge-heart { animation: heartBeat 0.8s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }

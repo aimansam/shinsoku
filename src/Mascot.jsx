@@ -40,12 +40,12 @@ const MOUTHS = {
 // mood -> which parts to draw
 const MOODS = {
   focus: { eyes: 'open', mouth: 'smile', brow: 'flat' },
-  hype: { eyes: 'open', mouth: 'open', brow: 'up', sparkle: true, paws: true },
+  hype: { eyes: 'open', mouth: 'open', brow: 'up', sparkle: true },
   ultra: { eyes: 'open', iris: '#fff', mouth: 'open', brow: 'angry', sparkle: true, aura: true },
   smug: { eyes: 'lid', mouth: 'smirk', brow: 'smug' },
   cry: { eyes: 'open', mouth: 'cry', brow: 'sad', tears: true },
   sleep: { eyes: 'closed', mouth: 'o', brow: 'flat', zzz: true },
-  wink: { eyes: 'wink', mouth: 'open', brow: 'up', hearts: true, paws: true },
+  wink: { eyes: 'wink', mouth: 'open', brow: 'up', hearts: true },
   shades: { eyes: 'shades', mouth: 'open', brow: 'none' },
   shock: { eyes: 'shock', mouth: 'o', brow: 'up', sweat: true },
 };
@@ -97,15 +97,6 @@ const Star = ({ x, y, s = 1, d = 0 }) => (
 const Heart = ({ x, y, s = 1, d = 0 }) => (
   <path className="float-heart" style={{ animationDelay: `${d}s` }} transform={`translate(${x} ${y}) scale(${s})`} fill="#ff5c93" stroke="#fff" strokeWidth="1.5"
     d="M0 7 C-14 -3 -8 -14 0 -6 C8 -14 14 -3 0 7Z" />
-);
-
-// little hand that waves when she is hyped
-const Paw = ({ x, cls }) => (
-  <g className={`paw ${cls}`} style={{ transformOrigin: `${x}px 150px` }}>
-    <rect x={x - 11} y="146" width="22" height="12" rx="4" fill="#27325e" stroke={INK} strokeWidth="2" />
-    <circle cx={x} cy="136" r="13" fill={SKIN} stroke={INK} strokeWidth="2" />
-    <path d={`M${x - 5} 128 V136 M${x} 126 V136 M${x + 5} 128 V136`} stroke="#e0a08b" strokeWidth="1.6" strokeLinecap="round" />
-  </g>
 );
 
 const Flower = ({ x, y, s = 1, d = 0 }) => (
@@ -193,12 +184,6 @@ export function Soku({ mood = 'focus', size = 190 }) {
         </g>
         <Flower x={64} y={64} s={1.6} />
         <Flower x={50} y={86} s={1} d={0.35} />
-        {m.paws && (
-          <>
-            <Paw x={44} cls="paw-l" />
-            <Paw x={156} cls="paw-r" />
-          </>
-        )}
         {m.zzz && <text className="zzz" x="144" y="70">Z</text>}
         {m.sparkle && (
           <>
