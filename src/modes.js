@@ -39,6 +39,7 @@ export const DEFAULT_SETTINGS = {
   noise: false,
   binaural: 'off',
   strict: false,
+  lobby: true,
 };
 
 export const fmtTime = (sec) => {

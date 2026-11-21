@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CopyButton } from '@mantine/core';
 import Mascot from './Mascot';
 import { LINES, pick } from './lines';
 import { DEPTHS, levelOf, levelProgress, levelTitle } from './modes';
 
-export default function Summary({ result: r, onAgain, onBack }) {
+export default function Summary({ result: r, music, fanfare, onAgain, onBack }) {
   const [talk] = useState(() => (r.aborted ? pick(LINES.rage) : pick(LINES.grade[r.grade])));
   const mood = r.aborted ? 'smug' : { S: 'ultra', A: 'hype', B: 'wink', C: 'smug', D: 'cry' }[r.grade];
+  useEffect(() => {
+    if (fanfare) music.victory(r.grade, r.aborted);
+    return () => music.stopMenu();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const xpAfter = r.xpBefore + (r.minutes >= 1 ? r.xp : 0);
   const before = levelOf(r.xpBefore);
   const after = levelOf(xpAfter);

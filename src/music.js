@@ -45,6 +45,28 @@ const midiToHz = (m) => 440 * 2 ** ((m - 69) / 12);
 const lerp = (a, b, t) => a + (b - a) * t;
 const BINAURAL = { theta: 6, alpha: 10, beta: 18, gamma: 40 };
 
+// Lobby (menu) loop: Am - F - C - G, 94 bpm, 8 bars. Melody notes are [step in bar, MIDI note, length in steps].
+const LOBBY = {
+  bpm: 94,
+  chords: [[57, 60, 64], [53, 57, 60], [55, 60, 64], [55, 59, 62]],
+  melody: [
+    [[0, 76, 4], [6, 72, 2], [8, 74, 4], [12, 72, 2], [14, 69, 2]],
+    [[0, 72, 4], [6, 69, 2], [8, 72, 4], [12, 74, 2], [14, 72, 2]],
+    [[0, 76, 4], [6, 79, 2], [8, 76, 4], [12, 74, 2], [14, 72, 2]],
+    [[0, 74, 6], [8, 71, 2], [10, 74, 2], [12, 79, 4]],
+    [[0, 81, 4], [6, 79, 2], [8, 76, 4], [12, 79, 2], [14, 76, 2]],
+    [[0, 77, 4], [6, 76, 2], [8, 72, 4], [12, 76, 2], [14, 77, 2]],
+    [[0, 79, 4], [6, 76, 2], [8, 72, 4], [12, 74, 2], [14, 76, 2]],
+    [[0, 74, 4], [6, 71, 2], [8, 74, 2], [10, 79, 2], [12, 83, 4]],
+  ],
+};
+
+const makeTimer = (fn) => {
+  const w = new Worker(URL.createObjectURL(new Blob(['setInterval(() => postMessage(0), 50)'], { type: 'text/javascript' })));
+  w.onmessage = fn;
+  return w;
+};
+
 export class Music {
   constructor() {
     this.ctx = null;
@@ -56,11 +78,14 @@ export class Music {
     this.volume = 0.6;
     this.listeners = new Set();
     this.step = 0;
+    this.lobbyOn = false;
   }
 
   // Must be called from a click so the browser lets audio play.
   start({ style, depth = 0, volume, noise, binaural }) {
     this.stop();
+    this.stopMenu();
+    this.muted = false;
     this.ensureContext();
     this.ctx.resume();
     this.style = STYLES[style] || null; // null = music off (noise / binaural only)
@@ -73,10 +98,7 @@ export class Music {
     this.step = 0;
     this.nextTime = this.ctx.currentTime + 0.15;
     this.running = true;
-    this.timer = new Worker(
-      URL.createObjectURL(new Blob(['setInterval(() => postMessage(0), 50)'], { type: 'text/javascript' })),
-    );
-    this.timer.onmessage = () => this.schedule();
+    this.timer = makeTimer(() => this.schedule());
   }
 
   stop() {
@@ -109,7 +131,7 @@ export class Music {
 
   setVolume(v) {
     this.volume = v;
-    this.applyVolume(0.1);
+    if (this.master) this.applyVolume(0.1);
   }
 
   setAmbient(noise, binaural) {
@@ -183,7 +205,7 @@ export class Music {
 
   // Bass / mid / high energy (0..1) for the visuals.
   energy() {
-    if (!this.analyser || !this.running) return { bass: 0, mid: 0, high: 0 };
+    if (!this.analyser || !(this.running || this.lobbyOn)) return { bass: 0, mid: 0, high: 0 };
     this.analyser.getByteFrequencyData(this.bins);
     const avg = (a, b) => {
       let s = 0;
@@ -191,6 +213,116 @@ export class Music {
       return s / (b - a) / 255;
     };
     return { bass: avg(0, 4), mid: avg(4, 24), high: avg(24, 100) };
+  }
+
+  // ---- menu sounds: lobby loop + victory fanfare (separate from the session engine) ----
+
+  menuReady() {
+    this.ensureContext();
+    this.ctx.resume();
+    const t = this.ctx.currentTime;
+    this.menu.gain.cancelScheduledValues(t);
+    this.menu.gain.setValueAtTime(1, t);
+    this.onBreak = false;
+    this.depth = 0;
+    this.applyFilter();
+  }
+
+  // Cuts anything playing on the menu bus (lobby loop, or the tail of a fanfare).
+  stopMenu() {
+    this.lobbyOn = false;
+    this.lobbyTimer?.terminate();
+    this.lobbyTimer = null;
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.menu.gain.cancelScheduledValues(t);
+    this.menu.gain.setTargetAtTime(0, t, 0.08);
+    this.victoryBus?.gain.setTargetAtTime(0, t, 0.05);
+  }
+
+  // Calm looping tune for the menu. Needs a user gesture before the browser lets it play.
+  startLobby(volume) {
+    if (this.running || this.lobbyOn) return;
+    if (volume != null) this.volume = volume;
+    this.muted = false;
+    this.menuReady();
+    this.lobbyOn = true;
+    this.applyVolume(0.8);
+    this.lobbyStep = 0;
+    this.lobbyNext = this.ctx.currentTime + 0.1;
+    this.lobbyTimer = makeTimer(() => this.scheduleLobby());
+  }
+
+  scheduleLobby() {
+    const stepLen = 60 / LOBBY.bpm / 4;
+    while (this.lobbyNext < this.ctx.currentTime + 0.25) {
+      this.playLobby(this.lobbyStep % 128, this.lobbyNext, stepLen);
+      this.lobbyNext += stepLen;
+      this.lobbyStep++;
+    }
+  }
+
+  playLobby(n, t, stepLen) {
+    const i = n % 16;
+    const bar = Math.floor(n / 16);
+    const chord = LOBBY.chords[bar % 4];
+    const m = this.menu;
+    if (i % 2 === 0) {
+      const delay = Math.max(0, (t - this.ctx.currentTime) * 1000);
+      setTimeout(() => this.lobbyOn && this.listeners.forEach((fn) => fn(i, bar % 4)), delay);
+    }
+    if (i === 0 || i === 8 || (bar % 2 && i === 10)) this.kick(t, 0.75);
+    if (i === 4 || i === 12) this.noiseHit(t, 0.3, 0.12, 'bandpass', 1900); // soft clap
+    if (i % 2 === 0) this.hat(t, i % 4 === 2 ? 0.2 : 0.1, 0.03);
+    if (i === 0 || i === 6 || i === 10) this.tone(t, chord[0] - 12, 'sawtooth', stepLen * 2.6, 0.01, 0.2, m, 450); // bass
+    if (i === 0) chord.forEach((note) => this.tone(t, note, 'triangle', stepLen * 15, 0.2, 0.05, m, 2500)); // pad
+    if (i % 2 === 0) this.tone(t, chord[[0, 1, 2, 1][(i / 2) % 4]] + 12, 'triangle', stepLen * 2, 0.004, 0.06, m, 3500); // pluck arp
+    LOBBY.melody[bar].forEach(([at, note, len]) => at === i && this.tone(t, note, 'square', stepLen * len * 0.95, 0.01, 0.05, m, 3200));
+  }
+
+  // Win fanfare when a session ends. The better the grade, the bigger it gets. A retreat gets a sad little descent.
+  victory(grade = 'B', aborted = false) {
+    if (this.running) return;
+    this.stopMenu();
+    this.menuReady();
+    this.applyVolume(0.05);
+    const m = (this.victoryBus = this.ctx.createGain()); // its own bus, so stopMenu() can cut the tail
+    m.connect(this.filter);
+    const t = this.ctx.currentTime + 0.08;
+    const brass = (at, notes, dur, gain = 0.07) =>
+      notes.forEach((n) => {
+        this.tone(at, n, 'sawtooth', dur, 0.015, gain, m, 4200);
+        this.tone(at, n + 12, 'square', dur, 0.015, gain * 0.4, m, 3000);
+      });
+    if (aborted) {
+      [67, 64, 60, 55].forEach((n, k) => this.tone(t + k * 0.26, n, 'sawtooth', 0.5, 0.02, 0.12, m, 1800));
+      this.kick(t + 1.1, 0.8);
+      return;
+    }
+    const power = { S: 3, A: 2, B: 1, C: 1, D: 0 }[grade] ?? 1;
+    if (power === 0) {
+      brass(t, [67], 0.25);
+      brass(t + 0.28, [72, 76, 79], 0.9);
+      this.kick(t + 0.28, 0.9);
+      return;
+    }
+    const hit = (at, chord, dur) => {
+      brass(at, chord, dur, 0.06);
+      this.kick(at, 1.4);
+      this.snare(at, 1);
+      this.noiseHit(at, 0.45, 1, 'highpass', 6000); // crash
+    };
+    brass(t, [60, 64, 67], 0.18);
+    this.kick(t, 1);
+    [72, 76, 79, 84].forEach((n, k) => brass(t + 0.2 + k * 0.13, [n], 0.2, 0.08)); // rising run
+    hit(t + 0.78, [60, 64, 67, 72, 76, 79], 1.8);
+    if (power >= 2)
+      for (let k = 0; k < 14; k++) this.tone(t + 0.95 + k * 0.12, [96, 98, 100, 103, 105, 108][Math.floor(Math.random() * 6)], 'sine', 0.5, 0.003, 0.05, m); // sparkles
+    if (power >= 3) {
+      [74, 78, 81, 86].forEach((n, k) => brass(t + 2.2 + k * 0.1, [n], 0.18, 0.08)); // second run, key change up
+      hit(t + 2.65, [62, 66, 69, 74, 78, 81], 2.2);
+      for (let k = 0; k < 16; k++) this.tone(t + 2.8 + k * 0.11, [98, 100, 102, 105, 107, 110][Math.floor(Math.random() * 6)], 'sine', 0.5, 0.003, 0.05, m);
+    }
   }
 
   // ---- audio graph ----
@@ -202,6 +334,7 @@ export class Music {
     this.mel = ctx.createGain();
     this.drums = ctx.createGain();
     this.drums.gain.value = 1.25;
+    this.menu = ctx.createGain(); // lobby music and the victory fanfare live on their own bus so they can be cut instantly
     this.filter = ctx.createBiquadFilter();
     this.filter.type = 'lowpass';
     const comp = ctx.createDynamicsCompressor(); // glues the mix and lets it run loud
@@ -223,6 +356,7 @@ export class Music {
     this.bins = new Uint8Array(this.analyser.frequencyBinCount);
     this.mel.connect(this.filter);
     this.drums.connect(this.filter);
+    this.menu.connect(this.filter);
     // soft clipper as a last guard: transients that slip past the limiter are rounded off instead of clipping
     const clip = ctx.createWaveShaper();
     const curve = new Float32Array(1024);
@@ -258,7 +392,7 @@ export class Music {
   }
 
   applyVolume(seconds) {
-    const duck = this.onBreak ? 0.55 : 1;
+    const duck = this.onBreak ? 0.55 : this.lobbyOn ? 0.75 : 1;
     this.master.gain.setTargetAtTime(this.muted ? 0 : this.volume * 2.4 * duck, this.ctx.currentTime, seconds);
   }
 

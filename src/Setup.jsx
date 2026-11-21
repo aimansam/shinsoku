@@ -96,6 +96,7 @@ export default function Setup({ settings: s, setSettings, stats, onStart }) {
           <Slider value={s.volume} onChange={(v) => set({ volume: v })} />
         </div>
         <Switch label="Brown noise layer (off = pure beat)" checked={s.noise} onChange={(e) => set({ noise: e.currentTarget.checked })} />
+        <Switch label="Lobby music and victory fanfare" checked={s.lobby} onChange={(e) => set({ lobby: e.currentTarget.checked })} />
         <Switch label="Hard mode (no pausing)" checked={s.strict} onChange={(e) => set({ strict: e.currentTarget.checked })} />
       </div>
 

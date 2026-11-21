@@ -50,6 +50,25 @@ export default function App() {
     if (view === 'setup') vis.current?.setDepth(0, MODES[settings.mode].hue); // background takes the colour of the chosen mode
   }, [view, settings.mode]);
 
+  // Lobby music on the menu. Browsers only allow audio after a click or key press, so wait for the first one.
+  useEffect(() => {
+    if (view !== 'setup' || !settings.lobby) return undefined;
+    const go = () => music.startLobby(settings.volume / 100);
+    if (music.ctx?.state === 'running') go();
+    else {
+      window.addEventListener('pointerdown', go, { once: true });
+      window.addEventListener('keydown', go, { once: true });
+    }
+    return () => {
+      window.removeEventListener('pointerdown', go);
+      window.removeEventListener('keydown', go);
+      music.stopMenu();
+    };
+  }, [view, settings.lobby, music]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (view === 'setup') music.setVolume(settings.volume / 100);
+  }, [view, settings.volume, music]);
+
   const start = (runConfig) => {
     music.start({ style: settings.music, volume: settings.volume / 100, noise: settings.noise, binaural: settings.binaural });
     vis.current.setDepth(0, DEPTHS[0].hue);
@@ -75,7 +94,7 @@ export default function App() {
       <div className="layer">
         {view === 'setup' && <Setup settings={settings} setSettings={setSettings} stats={statsOf(history)} onStart={start} />}
         {view === 'session' && <Session run={run} settings={settings} xp={statsOf(history).xp} music={music} vis={vis} onFinish={finish} />}
-        {view === 'summary' && <Summary result={result} onAgain={() => start(run)} onBack={() => setView('setup')} />}
+        {view === 'summary' && <Summary result={result} music={music} fanfare={settings.lobby} onAgain={() => start(run)} onBack={() => setView('setup')} />}
       </div>
     </>
   );
