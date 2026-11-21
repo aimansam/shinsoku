@@ -1,0 +1,7 @@
+services:
+  shinsoku:
+    build: .
+    container_name: shinsoku
+    ports:
+      - "8899:80"
+    restart: unless-stopped
