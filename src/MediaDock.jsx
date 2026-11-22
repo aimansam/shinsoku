@@ -26,6 +26,7 @@ export default function MediaDock({ yt, anchor }) {
   const has = queue.length > 0;
   const cur = queue[yt.index] || queue[0];
   const key = cur ? keyOf(cur) : null;
+  const listKey = cur?.list ? keyOf(cur) : ''; // a new playlist gets a brand-new player (see below)
 
   const box = useRef(null);
   const mount = useRef(null);
@@ -67,18 +68,10 @@ export default function MediaDock({ yt, anchor }) {
   const syncTrack = () => {
     const p = player.current;
     const { yt: y, cur: c } = latest.current;
-    if (!p || !ready.current || !c || loaded.current === keyOf(c)) return;
+    if (!p || !ready.current || !c || c.list || loaded.current === keyOf(c)) return; // playlists: the player is re-created instead
     loaded.current = keyOf(c);
     setMsg('');
-    let before;
-    try {
-      before = p.getVideoData?.().video_id;
-    } catch {
-      /* nothing loaded yet */
-    }
-    if (c.list) (y.armed ? p.loadPlaylist : p.cuePlaylist).call(p, { listType: 'playlist', list: c.list });
-    else (y.armed ? p.loadVideoById : p.cueVideoById).call(p, c.id);
-    if (c.list && y.armed) watchPlaylist(c, before);
+    p[y.armed ? 'loadVideoById' : 'cueVideoById'](c.id);
   };
 
   const next = () => {
@@ -184,7 +177,7 @@ export default function MediaDock({ yt, anchor }) {
       setPlaying(false);
       setTitle('');
     };
-  }, [has]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [has, listKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(syncTrack, [key]); // eslint-disable-line react-hooks/exhaustive-deps
 
