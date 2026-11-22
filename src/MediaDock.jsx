@@ -85,6 +85,7 @@ export default function MediaDock({ yt, anchor }) {
       }
     }
     if (y.queue.length === 1) {
+      if (c.list) return p?.playVideoAt(0); // end of the only playlist: start it over, not just its last song
       p?.seekTo(0, true);
       return p?.playVideo();
     }
@@ -99,6 +100,7 @@ export default function MediaDock({ yt, anchor }) {
       const live = p.getVideoData?.().isLive; // live streams have nothing to restart
       if (!live && p.getDuration() > 0 && p.getCurrentTime() > 3) return p.seekTo(0, true);
       if (c.list && p.getPlaylistIndex() > 0) return p.previousVideo();
+      if (c.list && y.queue.length === 1) return p.playVideoAt((p.getPlaylist()?.length || 1) - 1); // wrap to the end of the only playlist
     } catch {
       /* not ready */
     }
