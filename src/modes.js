@@ -40,6 +40,9 @@ export const DEFAULT_SETTINGS = {
   binaural: 'off',
   strict: false,
   lobby: true,
+  queue: [], // YouTube songs: { id, list, title, channel }
+  qi: 0, // which song in the queue is current
+  ytKey: '', // optional YouTube Data API key for more reliable search
 };
 
 export const fmtTime = (sec) => {

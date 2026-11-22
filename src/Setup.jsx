@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { NumberInput, Select, Slider, Switch, Text, Textarea, TextInput } from '@mantine/core';
+import { Collapse, NumberInput, SegmentedControl, Select, Slider, Switch, Text, Textarea, TextInput } from '@mantine/core';
 import { MODES, levelOf, levelProgress, levelTitle } from './modes';
 import { STYLES } from './music';
+import { keyOf } from './media';
+import MusicSearch from './MusicSearch';
 import Mascot from './Mascot';
 import { LINES, pick } from './lines';
 
@@ -22,15 +24,16 @@ const BINAURAL = [
   { value: 'gamma', label: 'Gamma 40 Hz (peak)' },
 ];
 
-export default function Setup({ settings: s, setSettings, stats, onStart }) {
+export default function Setup({ settings: s, setSettings, stats, onStart, onAnchor, yt }) {
   const [mission, setMission] = useState('');
   const [checklist, setChecklist] = useState('');
+  const [more, setMore] = useState(false);
   const [chat, setChat] = useState(() => ({ id: 0, text: pick(LINES.greet), mood: 'wink' }));
   const poke = () => setChat({ id: Date.now(), text: pick(LINES.poke), mood: pick(['hype', 'smug', 'cry', 'wink']) });
   const set = (patch) => setSettings({ ...s, ...patch });
   const pickMode = (mode) => {
     const m = MODES[mode];
-    set({ mode, focus: m.focus, brk: m.brk, music: m.music });
+    set({ mode, focus: m.focus, brk: m.brk, music: yt.queue.length ? 'off' : m.music });
   };
   const level = levelOf(stats.xp);
   const num = (key) => (v) => typeof v === 'number' && set({ [key]: v });
@@ -42,26 +45,24 @@ export default function Setup({ settings: s, setSettings, stats, onStart }) {
     });
 
   return (
-    <div className="setup" style={{ '--c': `hsl(${MODES[s.mode].hue} 100% 58%)`, maxWidth: 760, margin: '0 auto', padding: '28px 16px 60px', display: 'grid', gap: 18 }}>
-      <div>
-        <h1 className="title">Shinsoku</h1>
-        <div className="kanji-sub">神速 · GODSPEED</div>
-        <p className="tag" style={{ margin: '14px 0 0', textShadow: '0 2px 8px #000' }}>Study · Work · Game · Create — power up and don't stop</p>
-      </div>
-
-      <div className="panel" style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-        <div className="lv" style={{ fontSize: 44 }}>LV {level}</div>
-        <div style={{ flex: 1, minWidth: 140 }}>
-          <b className="tag">{levelTitle(level)}</b>
-          <div className="seg" style={{ width: '100%', marginTop: 4 }}><i style={{ '--w': `${levelProgress(stats.xp)}%` }} /></div>
+    <div className="setup compact" style={{ '--c': `hsl(${MODES[s.mode].hue} 100% 58%)` }}>
+      <header className="setup-head">
+        <div>
+          <h1 className="title">Shinsoku</h1>
+          <div className="kanji-sub">神速 · GODSPEED</div>
         </div>
-        <Text className="tag">{stats.today} min today</Text>
-        <Text className="tag">{stats.streak} day streak</Text>
-        <Text className="tag">{stats.hours.toFixed(1)} h total</Text>
-      </div>
+        <div className="panel level">
+          <div className="lv">LV {level}</div>
+          <div style={{ flex: 1, minWidth: 90 }}>
+            <b className="tag">{levelTitle(level)}</b>
+            <div className="seg" style={{ width: '100%', marginTop: 4 }}><i style={{ '--w': `${levelProgress(stats.xp)}%` }} /></div>
+          </div>
+          <Text className="tag" size="xs">{stats.today} min today · {stats.streak} day streak · {stats.hours.toFixed(1)} h</Text>
+        </div>
+      </header>
 
       <div>
-        <h4 className="tag" style={{ margin: '0 0 8px', textShadow: '0 2px 8px #000' }}>Select mode</h4>
+        <h4 className="tag step">1 · Pick a mode</h4>
         <div className="modes">
           {Object.entries(MODES).map(([key, m], i) => (
             <button key={key} className={`mode ${s.mode === key ? 'on' : ''}`} style={{ '--h': m.hue, '--i': i }} onClick={() => pickMode(key)}>
@@ -73,31 +74,72 @@ export default function Setup({ settings: s, setSettings, stats, onStart }) {
         </div>
       </div>
 
-      <div className="panel" style={{ display: 'grid', gap: 12 }}>
-        <h4>Quest</h4>
-        <TextInput label="Mission" placeholder="What are you conquering?" maxLength={100} value={mission} onChange={(e) => setMission(e.currentTarget.value)} />
-        <Textarea label="Objectives (optional, one per line)" autosize minRows={2} maxRows={5} value={checklist} onChange={(e) => setChecklist(e.currentTarget.value)} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-          <NumberInput label="Focus min" min={1} max={180} value={s.focus} onChange={num('focus')} />
-          <NumberInput label="Break min" min={1} max={60} value={s.brk} onChange={num('brk')} />
-          <NumberInput label="Stages" min={1} max={8} value={s.rounds} onChange={num('rounds')} />
+      <div className="setup-cols">
+        <div className="stack">
+        <div className="panel col">
+          <h4>2 · Quest</h4>
+          <TextInput label="Mission" placeholder="What are you conquering?" maxLength={100} value={mission} onChange={(e) => setMission(e.currentTarget.value)} />
+          <Textarea label="Objectives (optional, one per line)" autosize minRows={2} maxRows={4} value={checklist} onChange={(e) => setChecklist(e.currentTarget.value)} />
+          <div className="trio">
+            <NumberInput label="Focus min" min={1} max={180} value={s.focus} onChange={num('focus')} />
+            <NumberInput label="Break min" min={1} max={60} value={s.brk} onChange={num('brk')} />
+            <NumberInput label="Stages" min={1} max={8} value={s.rounds} onChange={num('rounds')} />
+          </div>
+        </div>
+        {yt.queue.length > 0 && (
+          <div className="panel col">
+            <h4>♫ Now playing</h4>
+            <div ref={onAnchor} className="now-anchor" />
+            <ol className="queue">
+              {yt.queue.map((it, i) => (
+                <li key={`${keyOf(it)}-${i}`} className={i === yt.index ? 'on' : ''}>
+                  <button className="q-main" onClick={() => yt.jump(i)} title="Play this one">{i === yt.index ? '▶ ' : ''}{it.title}</button>
+                  <button className="q-x" onClick={() => yt.remove(i)} aria-label={`Remove ${it.title}`}>×</button>
+                </li>
+              ))}
+            </ol>
+            <button className="more" onClick={yt.clear}>Clear queue</button>
+          </div>
+        )}
+        </div>
+
+        <div className="stack">
+        <div className="panel col">
+          <h4>3 · Sound</h4>
+          <Select label="Beat" data={MUSIC} value={s.music} onChange={(v) => v && set({ music: v })} allowDeselect={false} />
+          <div>
+            <Text className="tag" size="xs" mb={4}>Visual intensity</Text>
+            <SegmentedControl fullWidth data={INTENSITY} value={s.intensity} onChange={(v) => set({ intensity: v })} />
+          </div>
+          <div>
+            <Text className="tag" size="xs">Volume</Text>
+            <Slider value={s.volume} onChange={(v) => set({ volume: v })} />
+          </div>
+        </div>
+        <div className="panel col">
+          <h4>♫ Music (YouTube)</h4>
+          <MusicSearch yt={yt} />
+        </div>
         </div>
       </div>
 
-      <div className="panel" style={{ display: 'grid', gap: 12 }}>
-        <h4>Soundtrack & visuals</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-          <Select label="Music" data={MUSIC} value={s.music} onChange={(v) => v && set({ music: v })} allowDeselect={false} />
-          <Select label="Visual intensity" data={INTENSITY} value={s.intensity} onChange={(v) => v && set({ intensity: v })} allowDeselect={false} />
-          <Select label="Brain waves (tone, optional)" data={BINAURAL} value={s.binaural} onChange={(v) => v && set({ binaural: v })} allowDeselect={false} />
-        </div>
-        <div>
-          <Text className="tag" size="sm">Volume</Text>
-          <Slider value={s.volume} onChange={(v) => set({ volume: v })} />
-        </div>
-        <Switch label="Brown noise layer (off = pure beat)" checked={s.noise} onChange={(e) => set({ noise: e.currentTarget.checked })} />
-        <Switch label="Lobby music and victory fanfare" checked={s.lobby} onChange={(e) => set({ lobby: e.currentTarget.checked })} />
-        <Switch label="Hard mode (no pausing)" checked={s.strict} onChange={(e) => set({ strict: e.currentTarget.checked })} />
+      <div>
+        <button className="more" onClick={() => setMore((m) => !m)}>{more ? '▾' : '▸'} More options</button>
+        <Collapse in={more}>
+          <div className="panel more-panel">
+            <Select label="Brain waves (tone, optional)" data={BINAURAL} value={s.binaural} onChange={(v) => v && set({ binaural: v })} allowDeselect={false} />
+            <Switch label="Brown noise layer (off = pure beat)" checked={s.noise} onChange={(e) => set({ noise: e.currentTarget.checked })} />
+            <TextInput
+              label="YouTube API key (optional)"
+              description="Makes song search more reliable. Free from Google Cloud Console (YouTube Data API v3). Stays in this browser."
+              placeholder="AIza..."
+              value={s.ytKey}
+              onChange={(e) => set({ ytKey: e.currentTarget.value })}
+            />
+            <Switch label="Hard mode (no pausing)" checked={s.strict} onChange={(e) => set({ strict: e.currentTarget.checked })} />
+            <Switch label="Lobby music and victory fanfare" checked={s.lobby} onChange={(e) => set({ lobby: e.currentTarget.checked })} />
+          </div>
+        </Collapse>
       </div>
 
       <div className="mascot-dock dock-setup" onClick={poke} title="Poke her">
@@ -105,8 +147,7 @@ export default function Setup({ settings: s, setSettings, stats, onStart }) {
       </div>
       <button className="gbtn start" onClick={go}>Press start</button>
       <Text size="xs" ta="center" style={{ textShadow: '0 1px 6px #000' }}>
-        Your power form rises the longer you stay in flow. Pausing or hitting "I broke focus" costs a form. Leaving this tab does nothing.
-        Headphones recommended for brain waves. Visuals flash fast with the beat. Pick Chill if you are light-sensitive.
+        Flow builds your power form; pausing or "I broke focus" costs one. Leaving the tab does nothing. Visuals flash fast with the beat, so pick Chill if you are light-sensitive.
       </Text>
     </div>
   );
