@@ -5,3 +5,13 @@ services:
     ports:
       - "8899:80"
     restart: unless-stopped
+    depends_on:
+      - shinsoku-api
+
+  # Plays YouTube songs whose owners block the embedded player (see api/server.py). Only reachable through shinsoku's /api/.
+  shinsoku-api:
+    build: ./api
+    container_name: shinsoku-api
+    restart: unless-stopped
+    volumes:
+      - ./api-data:/data # optional: cookies.txt, if YouTube ever asks this server to sign in

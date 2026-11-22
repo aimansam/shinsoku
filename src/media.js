@@ -12,6 +12,9 @@ export const QUICK_SEARCHES = ['lofi hip hop', 'synthwave', 'study music', 'anim
 // Same key = same track (used to avoid duplicates and to know when the player has to load something new).
 export const keyOf = (it) => (it.list ? `L${it.list}` : it.id);
 
+// The same song or playlist on youtube.com itself, where it plays even if its owner blocks other sites from embedding it.
+export const ytUrl = (it) => (it.list ? `https://www.youtube.com/watch?list=${it.list}` : `https://www.youtube.com/watch?v=${it.id}`);
+
 export const thumb = (id) => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
 
 export const fmtDuration = (sec) => {

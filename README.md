@@ -23,7 +23,7 @@ visuals and a cheeky mascot (Soku-chan) get louder, faster and more chaotic with
 
 - **Power forms:** BASE FORM → AWAKENED → SUPER → ULTRA → LIMIT BREAK as your uninterrupted flow time grows (5 / 15 / 30 / 60 min).
 - **Procedural beat music** synthesised with WebAudio (no audio files). Five styles, drums from the first second, more layers per form.
-- **Your own music from YouTube:** search for songs or whole playlists (or paste a video, playlist or live-radio link) on the setup screen, click a result to play it and keep going through the results, or add songs to a queue. The player follows you into the session, with previous / pause / next and a search button, and your queue is remembered. Search uses public Piped servers, which can be down; add a free YouTube Data API key under *More options* to make it reliable. Some videos and playlists block embedding (the player notices and skips them), the visuals can't react to YouTube audio, and linking music turns the built-in beat off.
+- **Your own music from YouTube:** search for songs or whole playlists (or paste a video, playlist or live-radio link) on the setup screen, click a result to play it and keep going through the results, or add songs to a queue. The player follows you into the session, with previous / pause / next and a search button, and your queue is remembered. Search uses public Piped servers, which can be down; add a free YouTube Data API key under *More options* to make it reliable. Some videos and playlists (often official label music) block embedding: with Docker, the small `shinsoku-api` helper then plays their audio through your own server instead (see below); without it, the player offers to open them on youtube.com. The visuals can't react to YouTube audio, and linking music turns the built-in beat off.
 - **Lobby music and a victory fanfare**, also synthesised: a calm looping tune on the menu (starts after your first click) and a win fanfare on the results screen that gets bigger with your grade (S is the biggest; a retreat gets a sad little descent). One switch on the setup screen turns both off.
 - **Audio-reactive WebGL background:** tunnel, kaleidoscope, speed lines, glitch rows, screen shake. 2D canvas fallback.
 - **Soku-chan**, an original anime-style SVG mascot (long wavy hair, flower hairpin, school blazer) with a dozen moods who dances to the beat, trolls you, and flies in for cut-ins.
@@ -39,6 +39,10 @@ visuals and a cheeky mascot (Soku-chan) get louder, faster and more chaotic with
 docker compose up -d --build
 # open http://localhost:8899
 ```
+
+This starts two containers: `shinsoku` (the app) and `shinsoku-api`, a small helper that uses [yt-dlp](https://github.com/yt-dlp/yt-dlp) to play songs whose owners block YouTube's embedded player. It updates yt-dlp on every start and daily, because YouTube changes often. If YouTube ever asks your server to "confirm you're not a bot", put a cookies file at `api-data/cookies.txt`. Note that playing YouTube audio outside YouTube's own player goes against YouTube's terms; the helper only kicks in for songs that can't be embedded, and the app works without it.
+
+Add `?debug` to the address to log every player step to the browser console and to `docker logs shinsoku`.
 
 Or for development:
 
